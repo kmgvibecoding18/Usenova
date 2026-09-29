@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Выход на пенсию 2027–2028</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --text: #1a1a19;
+    --muted: #6b6b66;
+    --faint: #a3a39e;
+    --line: #e7e6e2;
+    --accent: #1f5fd1;
+    --accent-soft: #eaf0fc;
+    --accent-text: #174aa6;
+    --radius: 10px;
+    --font: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413;
+      --surface: #1b1b1a;
+      --text: #ecebe7;
+      --muted: #9d9c96;
+      --faint: #6a6964;
+      --line: #2c2c2a;
+      --accent: #6d9cf2;
+      --accent-soft: #1c2940;
+      --accent-text: #9dbcf7;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413;
+    --surface: #1b1b1a;
+    --text: #ecebe7;
+    --muted: #9d9c96;
+    --faint: #6a6964;
+    --line: #2c2c2a;
+    --accent: #6d9cf2;
+    --accent-soft: #1c2940;
+    --accent-text: #9dbcf7;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 64px; }
+
+  header h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); }
+  header .today { color: var(--text); }
+
+  /* Сводка */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2fr);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    margin: 28px 0 24px;
+  }
+  .stat { padding: 18px 20px; border-left: 1px solid var(--line); min-width: 0; }
+  .stat:first-child { border-left: 0; }
+  .stat .label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .stat .value { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 500; line-height: 1.1; }
+  .stat .next-name { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .stat .next-meta { color: var(--muted); font-size: 14px; margin-top: 2px; }
+  .stat .next-meta .num { color: var(--accent-text); }
+
+  /* Панель управления */
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 3px;
+  }
+  .seg button {
+    font: inherit;
+    font-size: 14px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .seg button:hover { color: var(--text); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #0e1422; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #0e1422; }
+  }
+  .seg button:focus-visible, .search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .search { flex: 1 1 280px; position: relative; }
+  .search input {
+    width: 100%;
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 36px 10px 12px;
+  }
+  .search input::placeholder { color: var(--faint); }
+  .search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+  .search .clear {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    border: 0; background: transparent; color: var(--muted); font-size: 18px;
+    width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: none;
+  }
+  .search .clear.show { display: block; }
+  .search .clear:hover { color: var(--text); }
+
+  .result-info { color: var(--muted); font-size: 13px; margin: 0 0 28px; min-height: 19px; }
+  .legend { display: inline-flex; gap: 16px; margin-left: 16px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .legend .l-soon { background: var(--accent); }
+  .legend .l-done { background: var(--faint); }
+
+  /* Блок года */
+  .year { margin-bottom: 44px; }
+  .year-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .year-head h2 { font-family: var(--mono); font-weight: 500; font-size: 22px; margin: 0; }
+  .year-head .count { color: var(--muted); font-size: 14px; }
+
+  /* Шкала по месяцам */
+  .months {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .month { padding: 10px 4px; text-align: center; border-left: 1px solid var(--line); }
+  .month:first-child { border-left: 0; }
+  .month .m-name { font-size: 12px; color: var(--muted); }
+  .month .m-count { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 500; margin-top: 2px; }
+  .month.zero .m-count { color: var(--faint); }
+  .month.has { background: var(--accent-soft); }
+  .month.has .m-count { color: var(--accent-text); }
+  .month.now .m-name { color: var(--text); font-weight: 600; }
+  .month.now .m-name::after { content: " •"; color: var(--accent); }
+
+  /* Таблица */
+  .table { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 2.6fr) 110px 70px 110px 120px;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 20px;
+    border-top: 1px solid var(--line);
+  }
+  .row.head {
+    border-top: 0;
+    padding-top: 10px; padding-bottom: 10px;
+    font-size: 12px; color: var(--muted);
+  }
+  .row.head > div:not(:first-child) { text-align: right; }
+  .row > .c:not(.c-person) { text-align: right; }
+  .c-person .name { font-weight: 600; }
+  .c-person .role { color: var(--muted); font-size: 14px; margin-top: 1px; }
+  .c-person .role .dept::before { content: "·"; margin: 0 6px; color: var(--faint); }
+  .c .lbl { display: none; }
+  .c-retire .num { font-weight: 500; }
+
+  .badge {
+    display: inline-block;
+    font-size: 13px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .badge .num { font-size: 13px; }
+
+  .row.soon { box-shadow: inset 3px 0 0 var(--accent); }
+  .row.soon .badge { background: var(--accent); border-color: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .row.soon .badge { color: #0e1422; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .row.soon .badge { color: #0e1422; }
+  }
+  .row.done { color: var(--faint); }
+  .row.done .c-person .name, .row.done .c-person .role { color: var(--faint); }
+  .row.done .badge { color: var(--faint); border-style: dashed; }
+
+  mark { background: var(--accent-soft); color: inherit; border-radius: 2px; padding: 0 1px; }
+
+  .empty {
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  footer { color: var(--faint); font-size: 13px; margin-top: 12px; }
+
+  /* Планшет */
+  @media (max-width: 860px) {
+    .summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stat.next { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); }
+    .months { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .month:nth-child(7) { border-left: 0; }
+    .month:nth-child(n+7) { border-top: 1px solid var(--line); }
+  }
+
+  /* Телефон: строки → карточки */
+  @media (max-width: 640px) {
+    .wrap { padding: 24px 16px 48px; }
+    header h1 { font-size: 22px; }
+    .stat { padding: 14px 14px; }
+    .stat .value { font-size: 24px; }
+    .seg { width: 100%; }
+    .seg button { flex: 1; padding: 8px 6px; }
+    .legend { display: flex; margin: 6px 0 0; }
+    .months { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .month:nth-child(n) { border-left: 1px solid var(--line); border-top: 0; }
+    .month:nth-child(4n+1) { border-left: 0; }
+    .month:nth-child(n+5) { border-top: 1px solid var(--line); }
+
+    .table { border: 0; background: transparent; display: grid; gap: 10px; }
+    .row.head { display: none; }
+    .row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 14px 16px;
+    }
+    .row.soon { box-shadow: none; border-color: var(--accent); }
+    .c-person { grid-column: 1 / -1; }
+    .c-person .role .dept::before { content: ""; margin: 0; }
+    .c-person .role .dept { display: block; }
+    .row > .c:not(.c-person) { text-align: left; }
+    .c .lbl { display: block; font-size: 12px; color: var(--muted); margin-bottom: 1px; }
+    .row.done .c .lbl { color: var(--faint); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Выход на пенсию 2027–2028</h1>
+    <p>Отдел кадров · расчёт на <span class="today num" id="today"></span> · мужчины 63 года, женщины 61 год</p>
+  </header>
+
+  <section class="summary" aria-label="Сводка">
+    <div class="stat"><div class="label">Всего работников</div><div class="value" id="s-total">0</div></div>
+    <div class="stat"><div class="label">В 2027 году</div><div class="value" id="s-2027">0</div></div>
+    <div class="stat"><div class="label">В 2028 году</div><div class="value" id="s-2028">0</div></div>
+    <div class="stat next">
+      <div class="label">Ближайший выход</div>
+      <div class="next-name" id="s-next-name">—</div>
+      <div class="next-meta" id="s-next-meta"></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Фильтр по году">
+      <button type="button" data-year="all" aria-pressed="true">Все</button>
+      <button type="button" data-year="2027" aria-pressed="false">2027</button>
+      <button type="button" data-year="2028" aria-pressed="false">2028</button>
+    </div>
+    <div class="search">
+      <input type="search" id="q" placeholder="Поиск по ФИО, должности или подразделению" autocomplete="off" aria-label="Поиск">
+      <button type="button" class="clear" id="clear" aria-label="Очистить поиск">×</button>
+    </div>
+  </div>
+  <p class="result-info">
+    <span id="info"></span>
+    <span class="legend"><span><i class="l-soon"></i>≤ 6 мес. — готовить замену</span><span><i class="l-done"></i>Вышел(ла)</span></span>
+  </p>
+
+  <main id="list"></main>
+
+  <footer>Данные вымышлены, совпадения случайны. Льготные категории не учитываются.</footer>
+</div>
+
+<script>
+  const EMPLOYEES = [
+    { name: "Байтурсынов Марат Ержанович",   sex: "М", birth: "05.01.1964", position: "Оператор по добыче",          dept: "Цех добычи" },
+    { name: "Ахметов Серик Болатович",       sex: "М", birth: "14.02.1964", position: "Главный инженер",             dept: "Производственный отдел" },
+    { name: "Жумабаева Гульнара Каировна",   sex: "Ж", birth: "03.04.1966", position: "Бухгалтер",                   dept: "Бухгалтерия" },
+    { name: "Петров Николай Иванович",       sex: "М", birth: "22.06.1964", position: "Мастер буровой",              dept: "Буровой участок" },
+    { name: "Касымова Айгуль Маратовна",     sex: "Ж", birth: "09.08.1966", position: "Инспектор по кадрам",         dept: "Отдел кадров" },
+    { name: "Нургалиев Ерлан Сапарович",     sex: "М", birth: "30.10.1964", position: "Начальник склада",            dept: "Логистика" },
+    { name: "Смирнова Ольга Викторовна",     sex: "Ж", birth: "17.12.1966", position: "Экономист",                   dept: "Планово-экономический отдел" },
+    { name: "Омарова Динара Талгатовна",     sex: "Ж", birth: "26.01.1967", position: "Юрисконсульт",                dept: "Юридический отдел" },
+    { name: "Сейткали Бауыржан Нурланович",  sex: "М", birth: "11.03.1965", position: "Ведущий геолог",              dept: "Геологический отдел" },
+    { name: "Иванов Андрей Петрович",        sex: "М", birth: "08.05.1965", position: "Главный энергетик",           dept: "Энергослужба" },
+    { name: "Абдрахманова Сауле Ериковна",   sex: "Ж", birth: "19.07.1967", position: "Лаборант химанализа",         dept: "Лаборатория" },
+    { name: "Тулегенов Асхат Муратович",     sex: "М", birth: "02.09.1965", position: "Водитель спецтехники",        dept: "Транспортный цех" },
+    { name: "Ким Елена Сергеевна",           sex: "Ж", birth: "14.11.1967", position: "Специалист по охране труда",  dept: "Отдел ОТ и ТБ" },
+    { name: "Мухамедов Кайрат Ахметович",    sex: "М", birth: "27.12.1965", position: "Механик",                     dept: "Механическая служба" }
+  ];
+
+  const YEARS = [2027, 2028];
+  const RETIRE_AGE = { "М": 63, "Ж": 61 };
+  const MONTHS_SHORT = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  function parseDate(s) {
+    const [d, m, y] = s.split(".").map(Number);
+    return { d, m: m - 1, y };
+  }
+  function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+  function fmt(date) {
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    return `${dd}.${mm}.${date.getFullYear()}`;
+  }
+
+  // Дата выхода = дата рождения + пенсионный возраст; 29.02 → 28.02 в невисокосный год
+  function retirementDate(birth, age) {
+    const y = birth.y + age;
+    let d = birth.d;
+    if (birth.m === 1 && d === 29 && !isLeap(y)) d = 28;
+    return new Date(y, birth.m, d);
+  }
+
+  // Полные месяцы от сегодняшней даты до даты выхода
+  function fullMonths(from, to) {
+    let months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+    if (to.getDate() < from.getDate()) months--;
+    return Math.max(months, 0);
+  }
+
+  const people = EMPLOYEES.map(e => {
+    const age = RETIRE_AGE[e.sex];
+    const retire = retirementDate(parseDate(e.birth), age);
+    const done = retire <= today;
+    const months = done ? null : fullMonths(today, retire);
+    return {
+      ...e,
+      age,
+      retire,
+      year: retire.getFullYear(),
+      done,
+      months,
+      soon: !done && months <= 6,
+      haystack: `${e.name} ${e.position} ${e.dept}`.toLowerCase()
+    };
+  }).sort((a, b) => a.retire - b.retire);
+
+  const state = { year: "all", q: "" };
+
+  function esc(s) {
+    return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function highlight(text) {
+    const safe = esc(text);
+    if (!state.q) return safe;
+    const q = esc(state.q).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return safe.replace(new RegExp(q, "gi"), m => `<mark>${m}</mark>`);
+  }
+  function plural(n, one, few, many) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+  function leftText(p) {
+    if (p.done) return p.sex === "Ж" ? "Вышла" : "Вышел";
+    if (p.months === 0) return "< 1 мес.";
+    return `<span class="num">${p.months}</span> мес.`;
+  }
+
+  function renderSummary() {
+    document.getElementById("today").textContent = fmt(today);
+    document.getElementById("s-total").textContent = people.length;
+    YEARS.forEach(y => {
+      document.getElementById("s-" + y).textContent = people.filter(p => p.year === y).length;
+    });
+    const next = people.find(p => !p.done);
+    if (next) {
+      document.getElementById("s-next-name").textContent = next.name;
+      document.getElementById("s-next-meta").innerHTML =
+        `<span class="num">${fmt(next.retire)}</span> · ${esc(next.position)} · через ${leftText(next)}`;
+    } else {
+      document.getElementById("s-next-name").textContent = "Все работники вышли на пенсию";
+    }
+  }
+
+  function renderRow(p) {
+    const cls = ["row", p.soon ? "soon" : "", p.done ? "done" : ""].join(" ").trim();
+    return `
+      <div class="${cls}">
+        <div class="c c-person">
+          <div class="name">${highlight(p.name)}</div>
+          <div class="role"><span>${highlight(p.position)}</span><span class="dept">${highlight(p.dept)}</span></div>
+        </div>
+        <div class="c"><span class="lbl">Дата рождения</span><span class="num">${p.birth}</span></div>
+        <div class="c"><span class="lbl">Возраст выхода</span><span class="num">${p.age}</span></div>
+        <div class="c c-retire"><span class="lbl">Дата выхода</span><span class="num">${fmt(p.retire)}</span></div>
+        <div class="c"><span class="lbl">Осталось</span><span class="badge">${leftText(p)}</span></div>
+      </div>`;
+  }
+
+  function renderYear(year, list) {
+    const counts = Array(12).fill(0);
+    list.forEach(p => counts[p.retire.getMonth()]++);
+    const months = counts.map((n, i) => {
+      const isNow = today.getFullYear() === year && today.getMonth() === i;
+      const cls = ["month", n ? "has" : "zero", isNow ? "now" : ""].join(" ").trim();
+      return `<div class="${cls}" title="${MONTHS_SHORT[i]} ${year}: ${n}"><div class="m-name">${MONTHS_SHORT[i]}</div><div class="m-count">${n}</div></div>`;
+    }).join("");
+
+    const body = list.length
+      ? `<div class="table" role="table">
+           <div class="row head" role="row">
+             <div>Работник</div><div>Дата рождения</div><div>Возраст</div><div>Дата выхода</div><div>Осталось</div>
+           </div>
+           ${list.map(renderRow).join("")}
+         </div>`
+      : `<div class="empty">В ${year} году по запросу никого не найдено</div>`;
+
+    return `
+      <section class="year">
+        <div class="year-head">
+          <h2>${year}</h2>
+          <span class="count">${list.length} ${plural(list.length, "человек", "человека", "человек")}</span>
+        </div>
+        <div class="months" aria-label="Выходы по месяцам ${year}">${months}</div>
+        ${body}
+      </section>`;
+  }
+
+  function render() {
+    const q = state.q.toLowerCase();
+    const filtered = people.filter(p =>
+      (state.year === "all" || p.year === Number(state.year)) &&
+      (!q || p.haystack.includes(q))
+    );
+    const years = state.year === "all" ? YEARS : [Number(state.year)];
+    const list = document.getElementById("list");
+
+    if (!filtered.length && q) {
+      list.innerHTML = `<div class="empty">По запросу «${esc(state.q)}» никого не найдено</div>`;
+    } else {
+      list.innerHTML = years.map(y => renderYear(y, filtered.filter(p => p.year === y))).join("");
+    }
+
+    const soonCount = filtered.filter(p => p.soon).length;
+    document.getElementById("info").textContent =
+      `Показано ${filtered.length} из ${people.length}` +
+      (soonCount ? ` · ${soonCount} ${plural(soonCount, "выход", "выхода", "выходов")} в ближайшие 6 мес.` : "");
+  }
+
+  document.querySelectorAll(".seg button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.year = btn.dataset.year;
+      document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+      render();
+    });
+  });
+
+  const input = document.getElementById("q");
+  const clearBtn = document.getElementById("clear");
+  input.addEventListener("input", () => {
+    state.q = input.value.trim();
+    clearBtn.classList.toggle("show", input.value.length > 0);
+    render();
+  });
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    state.q = "";
+    clearBtn.classList.remove("show");
+    input.focus();
+    render();
+  });
+
+  renderSummary();
+  render();
+</script>
+</body>
+</html>
